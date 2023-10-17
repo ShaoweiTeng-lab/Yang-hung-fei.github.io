@@ -15,7 +15,7 @@ $(window).on("load", () => {
   let connectUrl = (config.url).split('//')[1];
   if (token == null)
     return;
-  let url = 'wss://' + connectUrl + '/websocket/userNotify?access_token=' + token;
+  let url = 'ws://' + connectUrl + '/websocket/userNotify?access_token=' + token;
   let webSocket = new WebSocket(url);
   webSocket.onopen = function () {
     console.log('創建連接。。。');

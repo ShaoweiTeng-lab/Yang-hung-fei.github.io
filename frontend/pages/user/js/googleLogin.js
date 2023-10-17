@@ -1,8 +1,6 @@
 
 window.addEventListener("load", function () {
-    // $("#googlelogin").on("click",event=>{ 
-    //     onClickSignIn();
-    // })
+   
     const googleLoginButton = document.getElementById("googlelogin");
 
     googleLoginButton.addEventListener("click", function (event) {
@@ -26,10 +24,7 @@ function renderButton() {
 function onSuccess(result) {
     authenticate(result.code)
         .then(res => {
-            // console.log(res);
-            // const parsedData = JSON.parse(res);
-            // token = parsedData.message;
-            // console.log("token : "+token);
+           console.log(res);
         })
         .catch(console.log);
     fadeOut();
@@ -42,18 +37,17 @@ function fadeIn() {
     $("div.overlay").fadeIn();
 }
 function authenticate(code) {
-
-    //TODO: 更改API網域
+    //把授權碼代到後端 
     return axios.post(config.url + '/user/googleLogin', JSON.stringify({ code }), {
         headers: {
             'Content-Type': 'application/json'
         }
     }).then(res => {
+        //拿回token
         let token = res.data.message;
         console.log("token : " + token);
-        localStorage.setItem('Authorization_U', token);
-        /**之後 跳轉頁 */
-        //TODO: API取userProfile，有空值就跳會員中心
+        //存到localstorage
+        localStorage.setItem('Authorization_U', token); 
         window.location.href = '../../pages/memberCentre/memberCentre.html';
     });
 }
@@ -63,6 +57,7 @@ function onFailure(error) {
     console.log(error);
 }
 function onClickSignIn() {
+    //燈箱
     fadeIn();
     if (auth2 == null) {
         auth2 = gapi.auth2.init({
@@ -71,7 +66,8 @@ function onClickSignIn() {
             redirect_uri: "http://localhost:5050",
             plugin_name: "This is Google oAuth login "
         });
-    }
+    } 
+    //渲染 設定callback事件
     auth2.grantOfflineAccess()
         .then(onSuccess)
         .catch(onFailure);

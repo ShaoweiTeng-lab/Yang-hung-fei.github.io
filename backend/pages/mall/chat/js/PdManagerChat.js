@@ -29,10 +29,11 @@ function connect() {
         errorConnect();
         return;
     } 
-    let url = 'wss://' + connectUrl + '/websocket/productMallChat?access_token=' + token;
+    let url = 'ws://' + connectUrl + '/websocket/productMallChat?access_token=' + token;
     webSocket = new WebSocket(url);
     webSocket.onopen = function () {
         console.log("Connect Success!");
+        //連秀後拿取使用者列表
         var jsonObj = {
             "type": "getUserList",
             "sender": "PdManager",
@@ -51,10 +52,10 @@ function connect() {
             var ul = document.createElement('ul');
             ul.id = "area";
             messagesArea.appendChild(ul);
-            // 這行的jsonObj.message是從redis撈出跟好友的歷史訊息，再parse成JSON格式處理
+            // 這行的jsonObj.message是從redis撈出跟使用者的歷史訊息，再parse成JSON格式處理
             var messages = JSON.parse(jsonObj.message);
             for (var i = 0; i < messages.length; i++) {
-                var historyData = JSON.parse(messages[i]);
+                var historyData = JSON.parse(messages[i]); 
                 var showMsg = historyData.message;
                 var li = document.createElement('li');
                 // 根據發送者是自己還是對方來給予不同的class名, 以達到訊息左右區分
@@ -68,19 +69,19 @@ function connect() {
             jsonObj.sender === self ? li.className += 'me' : li.className += 'friend';
             li.innerHTML = jsonObj.message;
             console.log(li);   
-            if((usersList.indexOf(jsonObj.sender)===-1)&&!(jsonObj.sender==="PdManager")){ 
-               //重新刷新列表
-                var jsonObj = {
-                    "type": "getUserList",
-                    "sender": "PdManager",
-                    "receiver": "",
-                    "message": ""
-                };
-                webSocket.send(JSON.stringify(jsonObj));
-            }
+            // if((usersList.indexOf(jsonObj.sender)===-1)&&!(jsonObj.sender==="PdManager")){ 
+            //    //重新刷新列表
+            //     var jsonObj = {
+            //         "type": "getUserList",
+            //         "sender": "PdManager",
+            //         "receiver": "",
+            //         "message": ""
+            //     };
+            //     webSocket.send(JSON.stringify(jsonObj));
+            // }
             let notify=document.getElementById(jsonObj.sender);  
             if(!(jsonObj.sender===user)&&!(jsonObj.sender==="PdManager")){
-                //當訊息內容不是當前提聊天框   
+                //當訊息內容不是當前聊天框   顯示紅點
                 notify.classList.add("visible");
                 notify.classList.remove("hidden");
                 return;
@@ -111,7 +112,7 @@ function sendMessage() {
         var jsonObj = {
             "type": "chat",
             "sender": self,
-            "receiver": user+"-"+userName,
+            "receiver": user+"-"+userName, 
             "message": message
         };
         webSocket.send(JSON.stringify(jsonObj));
@@ -122,6 +123,7 @@ function sendMessage() {
 
 // 更新列表
 function refreshUserList(jsonObj) {
+    //拿到聊天列表
     var users = jsonObj.userDataList;
     var row = document.getElementById("row");
     // console.log(users.userName);
@@ -130,10 +132,10 @@ function refreshUserList(jsonObj) {
         if (users[i] === self) { continue; }
         usersList.push(users[i].userId);
         let notReadList=jsonObj.notReadList; 
-        //判斷未讀
+        //判斷未讀 (未讀列表中 有 包含迭代聊天列表中當前user的userId) visible顯示
         let isHidden=(notReadList.indexOf(users[i].userId )===-1)?"hidden":"visible";
         row.innerHTML += '<div id=' + i + ' class="column" name="friendName"  >' +
-        '<div id=' + users[i].userId + ' class="notification-dot '+isHidden+'"></div>' + // 通知小点点
+        '<div id=' + users[i].userId + ' class="notification-dot '+isHidden+'"></div>' + // 通知小點點
         '<h2>' + users[i].userName + '</h2>' +
         '<input type="hidden" id="hiddenInput" value=' + users[i].userId + '>' +
     '</div>';
@@ -145,13 +147,14 @@ function addListener() {
     var container = document.getElementById("row");
     container.addEventListener("click", function (e) {
         userName = e.srcElement.textContent; 
-        // 使用 querySelector 或 getElementById 来获取 hidden input
+        // 使用 querySelector 或 getElementById 獲取 hidden input
         var inputElement = findInputElement(e.target);
+        //拿到對應的user名稱
         user = inputElement.value; 
         let notify=document.getElementById(user); 
         notify.classList.add("hidden");
         notify.classList.remove("visible"); 
-        updateFriendName(userName);
+        updateUserName(userName);
         var jsonObj = {
             "type": "history",
             "sender": self,
@@ -162,7 +165,7 @@ function addListener() {
     });
 }
 function findInputElement(element) {
-    // 逐级向上遍历 DOM 树，查找包含 input 的父级 div 元素
+    // 往上遍歷dom，查找包含 input 的父级 div 元素
     while (element) {
         if (element.tagName === "DIV" && element.querySelector("input")) {
             return element.querySelector("input");
@@ -171,12 +174,10 @@ function findInputElement(element) {
     }
     return null; // 没有找到包含 input 的 div 元素
 }
-function disconnect() {
-    webSocket.close();
-    document.getElementById('sendMessage').disabled = true; 
-}
+ 
 
-function updateFriendName(name) {
+function updateUserName(name) {
+    //抬頭名稱更新
     statusOutput.innerHTML = name;
 }
 
@@ -187,6 +188,6 @@ function errorConnect(){
         icon: "error",
       }).then((value) => {
         localStorage.removeItem("Authorization_M");
-        window.location.href = "/backend/login.html"; // 替换为你要跳转的页面地址
+        window.location.href = "/backend/login.html"; // 跳轉到登入頁
       });
 } 

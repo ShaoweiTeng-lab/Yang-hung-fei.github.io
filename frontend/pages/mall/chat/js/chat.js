@@ -29,7 +29,7 @@ function connect() {
         return;
     }
         
-    let url = 'wss://' + connectUrl + '/websocket/productMallChat?access_token=' + token;
+    let url = 'ws://' + connectUrl + '/websocket/productMallChat?access_token=' + token;
     webSocket = new WebSocket(url);
     webSocket.onopen = function () {
         console.log("Connect Success!");
