@@ -23,7 +23,7 @@ window.addEventListener("load", () => {
         const pdName = newPdName.value; // Corrected variable name
         if (pdName.trim() === "") { // Check if the trimmed value is empty
             const nameCheck = document.getElementById("nameCheck");
-            nameCheck.innerText = '不可為空';
+            nameCheck.innerText = '不可為空!';
         } else {
             const nameCheck = document.getElementById("nameCheck");
             nameCheck.innerText = '';
@@ -42,7 +42,7 @@ window.addEventListener("load", () => {
         const pdPricePattern = /^[0-9]+$/; // 只可輸入正整数
         if (!pdPricePattern.test(pdPrice)) {
             const priceCheck = document.getElementById("priceCheck");
-            priceCheck.innerText = '請輸入數字';
+            priceCheck.innerText = '不可為空，且只可輸入正整數!';
         } else {
             const priceCheck = document.getElementById("priceCheck");
             priceCheck.innerText = '';
